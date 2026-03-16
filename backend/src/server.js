@@ -13,37 +13,38 @@ import sessionRoutes from "./routes/sessionRoute.js";
 
 const app = express();
 
-const __dirname = path.resolve();
-
 // middleware
 app.use(express.json());
-// credentials:true meaning?? => server allows a browser to include cookies on request
 app.use(cors({ origin: ENV.CLIENT_URL, credentials: true }));
-app.use(clerkMiddleware()); // this adds auth field to request object: req.auth()
+app.use(clerkMiddleware());
 
+// Inngest and API routes
 app.use("/api/inngest", serve({ client: inngest, functions }));
 app.use("/api/chat", chatRoutes);
 app.use("/api/sessions", sessionRoutes);
 
+// Health check
 app.get("/health", (req, res) => {
-  res.status(200).json({ msg: "api is up and running" });
+  res.status(200).json({ msg: "API is up and running" });
 });
 
-// make our app ready for deployment
+// ✅ PRODUCTION: Serve frontend only if you include build in backend (optional)
+// If your frontend is on Vercel, comment out or remove static serving.
+// const __dirname = path.resolve();
 // if (ENV.NODE_ENV === "production") {
-//   app.use(express.static(path.join(__dirname, "../frontend/dist")));
-
-//   app.get("/{*any}", (req, res) => {
-//     res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
+//   const frontendDistPath = path.join(__dirname, "../frontend/dist");
+//   app.use(express.static(frontendDistPath));
+//   app.get("*", (req, res) => {
+//     res.sendFile(path.join(frontendDistPath, "index.html"));
 //   });
 // }
 
 const startServer = async () => {
   try {
     await connectDB();
-    app.listen(ENV.PORT, () => console.log("Server is running on port:", ENV.PORT));
+    app.listen(ENV.PORT, () => console.log("Server running on port:", ENV.PORT));
   } catch (error) {
-    console.error("💥 Error starting the server", error);
+    console.error("💥 Error starting server:", error);
   }
 };
 
