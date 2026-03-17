@@ -21,7 +21,8 @@ function useStreamClient(session, loadingSession, isHost, isParticipant) {
       if (session.status === "completed") return;
 
       try {
-        const { token, userId, userName, userImage } = await sessionApi.getStreamToken();
+        const response = await sessionApi.getStreamToken();
+        const { token, userId, userName, userImage } = response.data;
 
         const client = await initializeStreamClient(
           {
@@ -29,7 +30,7 @@ function useStreamClient(session, loadingSession, isHost, isParticipant) {
             name: userName,
             image: userImage,
           },
-          token
+          token,
         );
 
         setStreamClient(client);
@@ -47,11 +48,14 @@ function useStreamClient(session, loadingSession, isHost, isParticipant) {
             name: userName,
             image: userImage,
           },
-          token
+          token,
         );
         setChatClient(chatClientInstance);
 
-        const chatChannel = chatClientInstance.channel("messaging", session.callId);
+        const chatChannel = chatClientInstance.channel(
+          "messaging",
+          session.callId,
+        );
         await chatChannel.watch();
         setChannel(chatChannel);
       } catch (error) {
